@@ -16,3 +16,20 @@ eureka:
   instance:
     leaseRenewalIntervalInSeconds: 5
     lease-expiration-duration-in-seconds: 5
+
+# การตั้งค่า TTS API (เพิ่มเติม)
+tts:
+  provider: azure # หรือ google, elevenlabs
+  api-key: ${TTS_API_KEY}
+  region: eastus
+
+  # การตั้งค่าเสียงภาษาไทย
+  voice-id:
+    th-female: th-TH-PremwadeeNeural # เสียงผู้หญิงภาษาไทย
+    th-male: th-TH-NiwatNeural # เสียงผู้ชายภาษาไทย
+
+  # การตั้งค่าทั่วไปของเสียง
+  default-pitch: 0
+  default-rate: 1.0
+  default-volume: 1.0
+  emotion-intensity: 0.7
