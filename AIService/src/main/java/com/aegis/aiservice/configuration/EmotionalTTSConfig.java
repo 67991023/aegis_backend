@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import com.aegis.aiservice.service.providers.GoogleTtsProvider;
 import com.aegis.aiservice.service.providers.ElevenLabsTtsProvider;
 import com.aegis.aiservice.service.providers.AzureTtsProvider;
+// Add this import
+import com.aegis.aiservice.service.providers.TtsProvider;
 
 @Configuration
 public class EmotionalTTSConfig {
