@@ -6,8 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.aegis.aiservice.dto.EmotionalResponseRequest;
+import com.aegis.aiservice.dto.userGenerateRequest; // Add this import
 import com.aegis.aiservice.service.EmotionalTTSService;
-// นำเข้า aiService ที่มีอยู่ในโปรเจคของคุณ
 import com.aegis.aiservice.service.aiServiceImpt;
 
 @RestController
@@ -20,7 +20,7 @@ public class EmotionalSpeechController {
     @Autowired
     public EmotionalSpeechController(EmotionalTTSService ttsService, aiServiceImpt aiService) {
         this.ttsService = ttsService;
-        this.aiService = aiService;
+        this.aiService = aiService; // Make sure this is aiService, not ttsService
     }
 
     @PostMapping(value = "/synthesize", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
@@ -33,9 +33,12 @@ public class EmotionalSpeechController {
 
         // สร้างการตอบสนองข้อความ (ถ้าไม่มีข้อความในคำขอ)
         if (message == null || message.trim().isEmpty()) {
-            // ใช้ aiService ที่มีอยู่เพื่อสร้างการตอบสนอง
-            // โค้ดนี้ต้องปรับให้เข้ากับการใช้งาน aiService ของคุณ
-            message = aiService.getMessage(request.getMessage(), sessionId);
+            // Create a userGenerateRequest object correctly
+            userGenerateRequest genRequest = new userGenerateRequest();
+            genRequest.setMessage(request.getMessage());
+            genRequest.setSessionId(sessionId);
+
+            message = aiService.getMessage(genRequest);
         }
 
         // แปลงข้อความเป็นเสียงที่มีอารมณ์

@@ -1,10 +1,12 @@
 package com.aegis.aiservice.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import com.aegis.aiservice.dto.VoiceParameters;
 import com.aegis.aiservice.model.EmotionalResponse;
 import com.aegis.aiservice.util.SSMLGenerator;
+import com.aegis.aiservice.service.providers.TtsProvider;
 
 @Service
 public class EmotionalTTSService {
@@ -17,7 +19,7 @@ public class EmotionalTTSService {
 
     @Autowired
     public EmotionalTTSService(
-            TtsProvider ttsProvider,
+            @Qualifier("emotionalTtsProvider") TtsProvider ttsProvider,
             EmotionAnalyzerService emotionAnalyzer,
             EmotionToVoiceMapper emotionMapper,
             VoicePersonalityService voicePersonalityService,

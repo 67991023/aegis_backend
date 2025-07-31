@@ -3,9 +3,10 @@ package com.aegis.aiservice.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.aegis.aiservice.config.TtsProviderConfig;
+import com.aegis.aiservice.configuration.TtsProviderConfig;
 import com.aegis.aiservice.model.EmotionalResponse;
 import com.aegis.aiservice.model.EmotionType;
+
 
 @Service
 public class VoicePersonalityService {
@@ -23,9 +24,9 @@ public class VoicePersonalityService {
 
         // เลือกเสียงตามอารมณ์และเพศที่ต้องการ
         if (preferFemale) {
-            return config.getThFemaleVoice(); // ใช้เสียงผู้หญิงไทย
+            return config.getThFemaleVoiceId(); // ใช้เสียงผู้หญิงไทย
         } else {
-            return config.getThMaleVoice(); // ใช้เสียงผู้ชายไทย
+            return config.getThMaleVoiceId(); // ใช้เสียงผู้ชายไทย
         }
 
         // หมายเหตุ: สำหรับการใช้งานจริง คุณอาจต้องการเพิ่มเสียงเฉพาะสำหรับอารมณ์ต่างๆ

@@ -18,20 +18,12 @@ public class Controller {
         this.asisstant = asisstant;
     }
 
-
-    @GetMapping(value = "", produces =  MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chat(@RequestBody userGenerateRequest request) {
         String message = request.getMessage();
+        // Accessing sessionId properly
         String sessionId = request.getSessionId();
 
         return asisstant.chat(sessionId, message);
     }
-
-//    @GetMapping("/stream")
-//    public Flux<ChatResponse> generateStream(@RequestBody userGenerateRequest request) {
-//        String message = aiService.getMessage(request);
-//
-//        Prompt prompt = new Prompt(new UserMessage(message));
-//        return ollamaChatModel.stream(prompt);
-//    }
 }

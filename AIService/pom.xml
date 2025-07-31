@@ -207,12 +207,14 @@
             <version>4.4.16</version>
         </dependency>
 
-        <!-- HTTP Client 5.x for better HTTP/2 support -->
+        <!-- COMMENTED OUT HTTP Client 5.x - causing compatibility issues -->
+        <!--
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
             <version>5.2.3</version>
         </dependency>
+        -->
 
         <!-- Jackson for JSON handling -->
         <dependency>

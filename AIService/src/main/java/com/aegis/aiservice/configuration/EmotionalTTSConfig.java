@@ -8,6 +8,7 @@ import com.aegis.aiservice.service.providers.ElevenLabsTtsProvider;
 import com.aegis.aiservice.service.providers.AzureTtsProvider;
 // Add this import
 import com.aegis.aiservice.service.providers.TtsProvider;
+import com.aegis.aiservice.service.providers.MockTtsProvider;
 
 @Configuration
 public class EmotionalTTSConfig {
@@ -21,16 +22,8 @@ public class EmotionalTTSConfig {
     @Value("${tts.region:eastus}")
     private String region;
 
-    @Bean
+    @Bean(name = "emotionalTtsProvider")
     public TtsProvider ttsProvider() {
-        switch (provider.toLowerCase()) {
-            case "google":
-                return new GoogleTtsProvider(apiKey);
-            case "elevenlabs":
-                return new ElevenLabsTtsProvider(apiKey);
-            case "azure":
-            default:
-                return new AzureTtsProvider(apiKey, region);
-        }
+        return new MockTtsProvider();
     }
 }

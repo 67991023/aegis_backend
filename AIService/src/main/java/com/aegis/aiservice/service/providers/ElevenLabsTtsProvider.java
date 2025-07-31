@@ -4,17 +4,19 @@ import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 import com.aegis.aiservice.dto.VoiceParameters;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.util.Timeout;
+import org.apache.hc.core5.util.TimeValue;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class ElevenLabsTtsProvider implements TtsProvider {
 
@@ -32,27 +34,26 @@ public class ElevenLabsTtsProvider implements TtsProvider {
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
         connectionManager.setMaxTotal(50);
         connectionManager.setDefaultMaxPerRoute(20);
-        connectionManager.setValidateAfterInactivity(10000);
+        connectionManager.setValidateAfterInactivity(Timeout.ofMilliseconds(10000));
 
-        // Configure timeouts
+        // Configure timeouts using HttpClient 5.x API
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(5000)
-                .setSocketTimeout(30000)
-                .setConnectionRequestTimeout(5000)
+                .setConnectTimeout(Timeout.ofMilliseconds(5000))
+                .setResponseTimeout(Timeout.ofMilliseconds(30000))
+                .setConnectionRequestTimeout(Timeout.ofMilliseconds(5000))
                 .build();
 
-        // Build the HTTP client
-        this.httpClient = HttpClientBuilder.create()
+        // Build the HTTP client using HttpClient 5.x API
+        this.httpClient = HttpClients.custom()
                 .setConnectionManager(connectionManager)
                 .setDefaultRequestConfig(requestConfig)
                 .evictExpiredConnections()
-                .evictIdleConnections(30, TimeUnit.SECONDS)
+                .evictIdleConnections(TimeValue.ofSeconds(30))
                 .build();
 
         // Create a request factory using the pooled HTTP client
         HttpComponentsClientHttpRequestFactory requestFactory =
                 new HttpComponentsClientHttpRequestFactory(httpClient);
-        requestFactory.setBufferRequestBody(false); // Don't buffer the entire request body in memory
 
         // Initialize RestTemplate with the factory
         this.restTemplate = new RestTemplate(requestFactory);
@@ -103,10 +104,8 @@ public class ElevenLabsTtsProvider implements TtsProvider {
             voiceSettings.put("stability", stability);
             voiceSettings.put("similarity_boost", similarityBoost);
 
-            // Add volume control if supported by ElevenLabs
-            if (params.getVolume() > 0) {
-                voiceSettings.put("volume", params.getVolume());
-            }
+            // ElevenLabs doesn't support direct volume control in the API
+            // Volume adjustment would need to be handled in post-processing
 
             body.put("voice_settings", voiceSettings);
 
@@ -187,13 +186,14 @@ public class ElevenLabsTtsProvider implements TtsProvider {
     /**
      * Clean up resources when this provider is no longer needed
      */
-    public void close() {
+    public void close() throws IOException {
         if (httpClient != null) {
             try {
                 httpClient.close();
                 logger.info("ElevenLabs HTTP client closed successfully");
-            } catch (Exception e) {
+            } catch (IOException e) {
                 logger.warn("Error closing HTTP client: {}", e.getMessage());
+                throw e;
             }
         }
     }
