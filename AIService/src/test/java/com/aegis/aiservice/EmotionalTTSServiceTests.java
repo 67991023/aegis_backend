@@ -1,8 +1,12 @@
-package com.aegis.aiservice.service;
+package com.aegis.aiservice;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.aegis.aiservice.service.EmotionAnalyzerService;
+import com.aegis.aiservice.service.EmotionToVoiceMapper;
+import com.aegis.aiservice.service.EmotionalTTSService;
+import com.aegis.aiservice.service.VoicePersonalityService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

@@ -21,27 +21,11 @@ public class AzureTtsProvider implements TtsProvider {
         try {
             SpeechConfig config = SpeechConfig.fromSubscription(apiKey, region);
             config.setSpeechSynthesisVoiceName(params.getVoiceId());
-
-            // สร้างสตรีมเสียง
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            AudioOutputStream audioOutputStream = AudioOutputStream.createPullStream();
-
-            SpeechSynthesizer synthesizer = new SpeechSynthesizer(config, audioOutputStream);
-            SpeechSynthesisResult result = synthesizer.speakSsmlAsync(ssml).get();
-
-            if (result.getReason() == ResultReason.SynthesizingAudioCompleted) {
-                byte[] audio = result.getAudioData();
-                return audio;
-            } else {
-                throw new Exception("Speech synthesis failed: " + result.getReason());
-            }
+            SpeechSynthesizer synthesizer = new SpeechSynthesizer(config, null);
+            SpeechSynthesisResult result = synthesizer.SpeakSsmlAsync(ssml).get();
+            return result.getAudioData();
         } catch (Exception e) {
             throw new RuntimeException("Error synthesizing speech with Azure: " + e.getMessage(), e);
         }
-    }
-
-    @Override
-    public String getName() {
-        return "Azure";
     }
 }
