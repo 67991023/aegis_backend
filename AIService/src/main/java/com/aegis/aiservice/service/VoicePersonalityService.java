@@ -1,35 +1,57 @@
 package com.aegis.aiservice.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import com.aegis.aiservice.configuration.TtsProviderConfig;
 import com.aegis.aiservice.model.EmotionalResponse;
-import com.aegis.aiservice.model.EmotionType;
-
+import org.springframework.stereotype.Service;
 
 @Service
 public class VoicePersonalityService {
 
-    private final TtsProviderConfig config;
-
-    @Autowired
-    public VoicePersonalityService(TtsProviderConfig config) {
-        this.config = config;
-    }
-
     public String selectAppropriateVoice(EmotionalResponse emotion, String preferredGender) {
-        // ตรวจสอบเพศที่ต้องการ
-        boolean preferFemale = !"male".equalsIgnoreCase(preferredGender);
-
-        // เลือกเสียงตามอารมณ์และเพศที่ต้องการ
-        if (preferFemale) {
-            return config.getThFemaleVoiceId(); // ใช้เสียงผู้หญิงไทย
-        } else {
-            return config.getThMaleVoiceId(); // ใช้เสียงผู้ชายไทย
+        // Default voice if no gender preference
+        if (preferredGender == null || preferredGender.isEmpty()) {
+            return "en-US-JennyNeural";
         }
 
-        // หมายเหตุ: สำหรับการใช้งานจริง คุณอาจต้องการเพิ่มเสียงเฉพาะสำหรับอารมณ์ต่างๆ
-        // เช่น เสียงผู้หญิงสำหรับอารมณ์เห็นอกเห็นใจ และเสียงผู้ชายสำหรับอารมณ์ให้กำลังใจ
+        // Convert EmotionType to String (assuming getType() returns EmotionType)
+        String emotionStr = emotion.getType() != null ? emotion.getType().toString().toLowerCase() : "neutral";
+
+        // Select based on gender preference
+        if (preferredGender.equalsIgnoreCase("male")) {
+            return selectMaleVoice(emotionStr);
+        } else {
+            return selectFemaleVoice(emotionStr);
+        }
+    }
+
+    private String selectMaleVoice(String emotion) {
+        // Select male voice based on emotion
+        switch (emotion.toLowerCase()) {
+            case "happy":
+                return "en-US-GuyNeural"; // Cheerful male voice
+            case "sad":
+                return "en-US-DavisNeural"; // More somber male voice
+            case "angry":
+                return "en-US-JasonNeural"; // Strong male voice
+            case "fearful":
+                return "en-US-TonyNeural"; // Softer male voice
+            default:
+                return "en-US-GuyNeural"; // Default male voice
+        }
+    }
+
+    private String selectFemaleVoice(String emotion) {
+        // Select female voice based on emotion
+        switch (emotion.toLowerCase()) {
+            case "happy":
+                return "en-US-JennyNeural"; // Cheerful female voice
+            case "sad":
+                return "en-US-AmberNeural"; // More somber female voice
+            case "angry":
+                return "en-US-AriaNeural"; // Strong female voice
+            case "fearful":
+                return "en-US-SaraNeural"; // Softer female voice
+            default:
+                return "en-US-JennyNeural"; // Default female voice
+        }
     }
 }

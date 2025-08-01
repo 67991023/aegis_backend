@@ -24,6 +24,15 @@
         <spring-cloud.version>2025.0.0</spring-cloud.version>
     </properties>
 
+    <!-- Add Microsoft Maven Repository for Azure Speech SDK -->
+    <repositories>
+        <repository>
+            <id>maven-cognitiveservices-speech</id>
+            <name>Microsoft Cognitive Services Speech Maven Repository</name>
+            <url>https://csspeechstorage.blob.core.windows.net/maven-repository</url>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -51,16 +60,15 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Spring Cloud Gateway -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway</artifactId>
-        </dependency>
 
         <!-- Spring Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor.netty</groupId>
+            <artifactId>reactor-netty</artifactId>
         </dependency>
 
         <!-- Spring Web MVC - required for TTS controllers -->
@@ -179,14 +187,14 @@
 
         <!-- Text-to-Speech Dependencies -->
 
-        <!-- Microsoft Azure Speech SDK - UPDATED VERSION -->
+        <!-- Microsoft Azure Speech SDK -->
         <dependency>
             <groupId>com.microsoft.cognitiveservices.speech</groupId>
             <artifactId>client-sdk</artifactId>
             <version>1.33.0</version>
         </dependency>
 
-        <!-- Google TTS - UPDATED VERSION -->
+        <!-- Google TTS -->
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-texttospeech</artifactId>

@@ -1,29 +1,22 @@
 package com.aegis.aiservice.configuration;
 
+import com.aegis.aiservice.service.providers.TtsProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.aegis.aiservice.service.providers.GoogleTtsProvider;
-import com.aegis.aiservice.service.providers.ElevenLabsTtsProvider;
-import com.aegis.aiservice.service.providers.AzureTtsProvider;
-// Add this import
-import com.aegis.aiservice.service.providers.TtsProvider;
-import com.aegis.aiservice.service.providers.MockTtsProvider;
 
 @Configuration
 public class EmotionalTTSConfig {
 
-    @Value("${tts.provider:azure}")
-    private String provider;
+    @Value("${azure.speech.subscription-key}")
+    private String subscriptionKey;
 
-    @Value("${tts.api-key}")
-    private String apiKey;
-
-    @Value("${tts.region:eastus}")
+    @Value("${azure.speech.region}")
     private String region;
 
     @Bean(name = "emotionalTtsProvider")
     public TtsProvider ttsProvider() {
-        return new MockTtsProvider();
+        System.out.println("Initializing Azure Emotional TTS provider");
+        return new AzureTtsProvider(subscriptionKey, region);
     }
 }

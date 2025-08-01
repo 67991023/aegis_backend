@@ -1,66 +1,35 @@
-package com.aegis.aiservice.service.providers;
+package com.aegis.aiservice.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-import io.netty.channel.ChannelOption;
-import com.aegis.aiservice.dto.VoiceParameters;
 
 @Service
-public class AzureTtsProvider implements TtsProvider {
+public class AzureTtsService {
 
     private final WebClient webClient;
     private final String subscriptionKey;
     private final String region;
 
-    public AzureTtsProvider(
+    public AzureTtsService(
             @Value("${azure.speech.subscription-key}") String subscriptionKey,
             @Value("${azure.speech.region}") String region) {
         this.subscriptionKey = subscriptionKey;
         this.region = region;
-
-        // Increase the memory buffer size to 16MB
-        ExchangeStrategies strategies = ExchangeStrategies.builder()
-                .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024))
-                .build();
-
-        // Configure HTTP client with increased response size limits
-        HttpClient httpClient = HttpClient.create()
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-                .responseTimeout(java.time.Duration.ofSeconds(60));
-
         this.webClient = WebClient.builder()
                 .baseUrl("https://" + region + ".tts.speech.microsoft.com")
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .exchangeStrategies(strategies)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/ssml+xml")
                 .defaultHeader("Ocp-Apim-Subscription-Key", subscriptionKey)
                 .defaultHeader("X-Microsoft-OutputFormat", "audio-16khz-128kbitrate-mono-mp3")
                 .build();
     }
 
-    // Implement the method from your actual interface
-    @Override
-    public Mono<Resource> synthesizeSpeech(String text, String voiceName) {
-        return convertToSpeech(text, voiceName);
-    }
-
-    // This method might be needed based on the EmotionalTTSService error
-    public Mono<Resource> synthesize(String text, VoiceParameters voiceParams) {
-        String voiceName = voiceParams != null && voiceParams.getVoice() != null ?
-                voiceParams.getVoice() : "en-US-JennyNeural";
-        return convertToSpeech(text, voiceName);
-    }
-
-    private Mono<Resource> convertToSpeech(String text, String voiceName) {
+    public Mono<Resource> convertToSpeech(String text, String voiceName) {
         String ssml = createSsml(text, voiceName);
 
         return webClient.post()
@@ -68,12 +37,7 @@ public class AzureTtsProvider implements TtsProvider {
                 .body(BodyInserters.fromValue(ssml))
                 .retrieve()
                 .bodyToMono(byte[].class)
-                .map(ByteArrayResource::new)
-                .onErrorResume(e -> {
-                    System.err.println("Error converting text to speech: " + e.getMessage());
-                    e.printStackTrace();
-                    return Mono.error(e);
-                });
+                .map(ByteArrayResource::new);
     }
 
     private String createSsml(String text, String voiceName) {

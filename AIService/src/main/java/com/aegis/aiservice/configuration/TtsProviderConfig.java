@@ -14,8 +14,14 @@ public class TtsProviderConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(TtsProviderConfig.class);
 
-    @Value("${tts.provider:google}")
+    @Value("${tts.provider:azure}")
     private String provider;
+
+    @Value("${azure.speech.subscription-key:}")
+    private String azureSubscriptionKey;
+
+    @Value("${azure.speech.region:}")
+    private String azureRegion;
 
     @Value("${tts.api-key:}")
     private String apiKey;
@@ -41,19 +47,69 @@ public class TtsProviderConfig {
     @Value("${tts.voice-id.th-male:th-TH-NiwatNeural}")
     private String thMaleVoiceId;
 
+    @Value("${tts.voice-id.en-female:en-US-JennyNeural}")
+    private String enFemaleVoiceId;
+
+    @Value("${tts.voice-id.en-male:en-US-GuyNeural}")
+    private String enMaleVoiceId;
+
     @Bean(name = "defaultTtsProvider")
     @Primary
     public TtsProvider ttsProvider() {
         logger.info("Initializing TTS provider: {}", provider);
 
-        switch (provider.toLowerCase()) {
-            case "azure":
-                return new AzureTtsProvider(apiKey, region);
-            case "elevenlabs":
-                return new ElevenLabsTtsProvider(apiKey);
-            case "google":
-            default:
-                return new GoogleTtsProvider(apiKey);
+        try {
+            switch (provider.toLowerCase()) {
+                case "azure":
+                    if (azureSubscriptionKey != null && !azureSubscriptionKey.isEmpty() &&
+                            azureRegion != null && !azureRegion.isEmpty()) {
+                        try {
+                            return new AzureTtsProvider(azureSubscriptionKey, azureRegion);
+                        } catch (Exception e) {
+                            logger.error("Failed to initialize Azure TTS provider: {}", e.getMessage());
+                            logger.info("Falling back to MockTtsProvider");
+                            return new MockTtsProvider();
+                        }
+                    } else {
+                        logger.error("Azure Speech configuration missing (subscription-key or region)");
+                        logger.info("Falling back to MockTtsProvider");
+                        return new MockTtsProvider();
+                    }
+
+                case "elevenlabs":
+                    if (apiKey != null && !apiKey.isEmpty()) {
+                        try {
+                            return new ElevenLabsTtsProvider(apiKey);
+                        } catch (Exception e) {
+                            logger.error("Failed to initialize ElevenLabs TTS provider: {}", e.getMessage());
+                            logger.info("Falling back to MockTtsProvider");
+                            return new MockTtsProvider();
+                        }
+                    } else {
+                        logger.error("ElevenLabs API key is missing");
+                        logger.info("Falling back to MockTtsProvider");
+                        return new MockTtsProvider();
+                    }
+
+                case "google":
+                    try {
+                        return new GoogleTtsProvider(apiKey);
+                    } catch (Exception e) {
+                        logger.error("Failed to initialize Google TTS provider: {}", e.getMessage());
+                        logger.info("Falling back to MockTtsProvider");
+                        return new MockTtsProvider();
+                    }
+
+                case "mock":
+                    return new MockTtsProvider();
+
+                default:
+                    logger.warn("Unknown provider '{}', falling back to MockTtsProvider", provider);
+                    return new MockTtsProvider();
+            }
+        } catch (Exception e) {
+            logger.error("Unexpected error initializing TTS provider: {}", e.getMessage());
+            return new MockTtsProvider();
         }
     }
 
@@ -79,5 +135,13 @@ public class TtsProviderConfig {
 
     public String getThMaleVoiceId() {
         return thMaleVoiceId;
+    }
+
+    public String getEnFemaleVoiceId() {
+        return enFemaleVoiceId;
+    }
+
+    public String getEnMaleVoiceId() {
+        return enMaleVoiceId;
     }
 }

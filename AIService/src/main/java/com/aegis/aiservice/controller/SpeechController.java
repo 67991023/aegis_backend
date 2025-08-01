@@ -2,38 +2,33 @@ package com.aegis.aiservice.controller;
 
 import com.aegis.aiservice.dto.asisstant;
 import com.aegis.aiservice.dto.userGenerateRequest;
-import com.aegis.aiservice.service.BufferedAzureTtsService;  // Add this import
-import com.aegis.aiservice.service.aiServiceImpt;
+import com.aegis.aiservice.service.BufferedAzureTtsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/chat-service")
-public class Controller {
-    private final aiServiceImpt aiService;
+@RequestMapping("/speech-service")
+public class SpeechController {
+
     private final asisstant asisstant;
-    private final BufferedAzureTtsService bufferedAzureTtsService;  // Change this line
+    private final BufferedAzureTtsService bufferedAzureTtsService;
 
-    public Controller(aiServiceImpt aiService, asisstant asisstant, BufferedAzureTtsService bufferedAzureTtsService) {  // Change this line
-        this.aiService = aiService;
+    @Autowired
+    public SpeechController(asisstant asisstant, BufferedAzureTtsService bufferedAzureTtsService) {
         this.asisstant = asisstant;
-        this.bufferedAzureTtsService = bufferedAzureTtsService;  // Change this line
-    }
-
-    @PostMapping(value = "", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> chat(@RequestBody userGenerateRequest request) {
-        String message = request.getMessage();
-        String sessionId = request.getSessionId();
-        return asisstant.chat(sessionId, message);
+        this.bufferedAzureTtsService = bufferedAzureTtsService;
     }
 
     @PostMapping(value = "/chat-and-speak")
@@ -57,7 +52,6 @@ public class Controller {
                             response.substring(0, 500) : response;
 
                     System.out.println("Converting to speech: " + shortResponse);
-                    // Use the new service directly
                     return bufferedAzureTtsService.convertToSpeech(shortResponse, "en-US-JennyNeural");
                 })
                 .map(resource -> ResponseEntity.ok()
